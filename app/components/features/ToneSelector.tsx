@@ -50,8 +50,8 @@ export default function ToneSelector({
                                     if (isMobile && onClose) onClose();
                                 }}
                                 className={`group relative flex items-center gap-3 rounded-xl p-3 text-left transition-all duration-200 ${isSelected
-                                        ? 'bg-white/10 ring-2 ring-white'
-                                        : 'bg-[#262626]/50 hover:bg-[#262626]'
+                                    ? 'bg-white/10 ring-2 ring-white'
+                                    : 'bg-[#262626]/50 hover:bg-[#262626]'
                                     }`}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -59,15 +59,16 @@ export default function ToneSelector({
                                 {/* Avatar */}
                                 <div
                                     className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 transition-all duration-200 ${isSelected
-                                            ? 'border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]'
-                                            : 'border-[#262626] group-hover:border-[#A3A3A3]'
+                                        ? 'border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]'
+                                        : 'border-[#262626] group-hover:border-[#A3A3A3]'
                                         }`}
                                 >
                                     <Image
                                         src={tone.image}
                                         alt={tone.label}
-                                        fill
-                                        className="object-cover"
+                                        width={56}
+                                        height={56}
+                                        className="h-full w-full object-cover"
                                     />
                                 </div>
 

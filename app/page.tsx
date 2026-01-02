@@ -43,9 +43,9 @@ export default function Home() {
     setActiveChatId(id);
   }, []);
 
-  const handleSendMessage = useCallback((content: string) => {
+  const handleSendMessage = useCallback(async (content: string) => {
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: crypto.randomUUID(),
       content,
       role: 'user',
       timestamp: new Date(),
@@ -53,26 +53,46 @@ export default function Home() {
 
     setMessages((prev) => [...prev, userMessage]);
 
-    setTimeout(() => {
-      const responses: Record<string, string> = {
-        neutral: `I understand. Let me help you with that.`,
-        formal: `Certainly. I shall endeavor to provide you with a comprehensive response regarding your inquiry.`,
-        urgent: `URGENT: I'm on it! Let's tackle this immediately - no time to waste!`,
-        optimistic: `What a great question! I'm absolutely thrilled to help you with this. Together, we'll find the perfect solution! 🌟`,
-        sarcastic: `Oh wow, what an *incredibly* original request. Let me consult my crystal ball... Just kidding, here's your answer.`,
-      };
+    // Call Python Backend
+    try {
+      const response = await fetch('http://localhost:8000/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: content,
+          toneId: selectedTone.id,
+          modelId: selectedModel.id
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
 
       const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        content: responses[selectedTone.id] || responses.neutral,
+        id: crypto.randomUUID(),
+        content: data.rewritten,
         role: 'assistant',
         timestamp: new Date(),
         toneId: selectedTone.id,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    }, 1000);
-  }, [selectedTone]);
+
+    } catch (error) {
+      console.error("Backend error:", error);
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        content: "⚠️ Error connecting to ChadGPT Backend. Make sure the API is running at localhost:8000.",
+        role: 'assistant',
+        timestamp: new Date(),
+        toneId: 'neutral',
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    }
+  }, [selectedTone, selectedModel]);
 
   const handleFileUpload = useCallback((file: File) => {
     const message = `📄 Uploaded file: ${file.name}`;
