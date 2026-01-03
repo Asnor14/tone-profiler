@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Copy, Check, Volume2, Loader2, StopCircle } from 'lucide-react';
 import { Message } from '@/app/lib/types';
+import { API_BASE_URL } from '@/app/lib/constants';
 
 interface MessageBubbleProps {
     message: Message;
@@ -64,8 +65,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         try {
             // Fetch audio from backend TTS endpoint
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/tts`, {
+            const response = await fetch(`${API_BASE_URL}/tts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

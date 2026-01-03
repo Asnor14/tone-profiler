@@ -7,7 +7,7 @@ import LandingPage from '@/app/components/layout/LandingPage';
 import LeftSidebar from '@/app/components/layout/LeftSidebar';
 import ChatArea from '@/app/components/layout/ChatArea';
 import MobileHeader from '@/app/components/layout/MobileHeader';
-import { TONES, MODELS } from '@/app/lib/constants';
+import { TONES, MODELS, API_BASE_URL } from '@/app/lib/constants';
 import { Message, Tone, ChatSession } from '@/app/lib/types';
 import { Model } from '@/app/lib/constants';
 import {
@@ -171,9 +171,7 @@ export default function Home() {
     setIsGenerating(true);
 
     try {
-      // Use environment variable for API URL, fallback to localhost if not set
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/generate`, {
+      const response = await fetch(`${API_BASE_URL}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
