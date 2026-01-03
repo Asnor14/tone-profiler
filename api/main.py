@@ -24,13 +24,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ElevenLabs Voice ID mapping per tone
+# ElevenLabs Male Voice ID mapping per tone persona
 VOICE_MAP = {
-    "neutral": "pNInz6obpgDQGcFmaJgB",     # Adam
-    "formal": "ErXwobaYiN019PkySvjV",       # Antoni
-    "urgent": "2EiwWnXFnvU5JabPnv8n",       # Clyde
-    "optimistic": "TxGEqnHWrfWFTfGW9XjX",   # Josh
-    "sarcastic": "MF3mGyEYCl7XYWbV9V6O",    # Fin
+    "neutral": "pNInz6obpgDQGcFmaJgB",     # Adam - Deep, narration style
+    "formal": "ErXwobaYiN019PkySvjV",       # Antoni - Polite, well-spoken
+    "urgent": "2EiwWnXFnvU5JabPnv8n",       # Clyde - Deep, authoritative
+    "optimistic": "TxGEqnHWrfWFTfGW9XjX",   # Josh - Young, energetic, happy
+    "sarcastic": "MF3mGyEYCl7XYWbV9V6O",    # Fin - Low pitch, dry, monotone
 }
 
 class GenerateRequest(BaseModel):
@@ -109,6 +109,7 @@ async def text_to_speech(request: TTSRequest):
     """
     Text-to-Speech endpoint using ai33.pro API (ElevenLabs proxy).
     Uses task-based flow: create task -> poll until done -> return audio URL.
+    Uses male voices matched to each persona tone.
     """
     import time
     
@@ -132,13 +133,15 @@ async def text_to_speech(request: TTSRequest):
             "xi-api-key": api_key,
         }
         
+        # Note: ai33.pro usually ignores voice_settings in the payload or handles them differently
+        # We stick to the basic payload required by ai33.pro docs
         payload = {
             "text": request.text,
             "model_id": "eleven_multilingual_v2",
             "with_transcript": False,
         }
         
-        print(f"TTS Request: Tone={request.toneId}, Voice={voice_id}")
+        print(f"TTS Request: Tone={request.toneId}, Voice={voice_id} (via ai33.pro)")
         
         # Step 1: Create TTS task
         response = requests.post(url, json=payload, headers=headers)
