@@ -14,7 +14,8 @@ import {
     ChevronUp,
     AlertCircle,
     CheckCircle,
-    Activity
+    Activity,
+    Languages
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -472,21 +473,26 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                         </h2>
                     </motion.div>
 
-                    <div className="grid gap-6 md:grid-cols-3">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                         <FeatureCard
                             icon={Layers}
                             title="Multi-Variant Synthesis"
-                            description="Utilizes high-level N-gram models to restructure sentence syntax without losing semantic meaning. Preserves context through semantic vector analysis."
+                            description="Utilizes high-level N-gram models to restructure sentence syntax without losing semantic meaning."
+                        />
+                        <FeatureCard
+                            icon={Languages}
+                            title="Tagalog & Taglish Ready"
+                            description="Full bilingual support. Type in 'Kanto slang' or 'Conyo', and the AI adapts perfectly with natural Filipino accent."
                         />
                         <FeatureCard
                             icon={Brain}
                             title="Tone Profiling"
-                            description="Dynamic style transfer supporting Formal, Urgent, Optimistic, and Sarcastic modalities. Real-time sentiment analysis with persona-specific output."
+                            description="Dynamic style transfer supporting Formal, Urgent, Optimistic, and Sarcastic modalities."
                         />
                         <FeatureCard
                             icon={Zap}
                             title="Hybrid Architecture"
-                            description="Seamless switching between Instruction-Tuned (FLAN-T5) and Generative (Llama 3.2) models. Adaptive processing based on task complexity."
+                            description="Seamless switching between FLAN-T5 and Llama 3.2 models. Adaptive processing based on task complexity."
                         />
                     </div>
                 </motion.div>
@@ -530,6 +536,20 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             description="Type text directly or click the file icon to upload .txt or .docx files for immediate processing. The system will rewrite your content in the selected persona's style."
                         />
                     </div>
+
+                    {/* Pro Tip: Filipino Mode */}
+                    <motion.div
+                        variants={fadeInUp}
+                        className="mt-8 p-4 rounded-xl bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30"
+                    >
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-xs font-bold text-white">!</span>
+                            <h4 className="text-sm font-semibold text-blue-200">Pro Tip: Try Filipino Mode</h4>
+                        </div>
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                            Just type <span className="text-white font-medium">&quot;Musta na bro?&quot;</span>. The AI will automatically detect Tagalog and respond with the correct accent and slang. Works with all Chad personas!
+                        </p>
+                    </motion.div>
                 </motion.div>
             </section>
 
