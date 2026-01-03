@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import LoadingSequence from '@/app/components/features/LoadingSequence';
+import LandingPage from '@/app/components/layout/LandingPage';
 import LeftSidebar from '@/app/components/layout/LeftSidebar';
 import ChatArea from '@/app/components/layout/ChatArea';
 import MobileHeader from '@/app/components/layout/MobileHeader';
@@ -19,8 +20,10 @@ import {
   createNewChatSession,
 } from '@/app/lib/chatStorage';
 
+type ViewState = 'landing' | 'loading' | 'chat';
+
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [view, setView] = useState<ViewState>('landing');
   const [selectedTone, setSelectedTone] = useState<Tone>(TONES[0]);
   const [selectedModel, setSelectedModel] = useState<Model>(MODELS[0]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -75,8 +78,14 @@ export default function Home() {
     }
   }, [messages, currentChatId, selectedTone.id, selectedModel.id]);
 
+  // Handle landing page start button
+  const handleStart = useCallback(() => {
+    setView('loading');
+  }, []);
+
+  // Handle loading sequence complete
   const handleLoadingComplete = useCallback(() => {
-    setIsLoading(false);
+    setView('chat');
   }, []);
 
   const handleToneSelect = useCallback((tone: Tone) => {
@@ -88,7 +97,6 @@ export default function Home() {
   }, []);
 
   const handleNewChat = useCallback(() => {
-    // Create new chat session
     const newSession = createNewChatSession(selectedTone.id, selectedModel.id);
     setCurrentChatId(newSession.id);
     setMessages([]);
@@ -112,7 +120,6 @@ export default function Home() {
     const updated = deleteChat(id);
     setChatSessions(updated);
 
-    // If deleting current chat, clear it
     if (currentChatId === id) {
       setCurrentChatId(null);
       setMessages([]);
@@ -131,7 +138,6 @@ export default function Home() {
   const handleSendMessage = useCallback(async (content: string) => {
     if (isGenerating) return;
 
-    // Create new chat session if needed
     let chatId = currentChatId;
     if (!chatId) {
       const newSession = createNewChatSession(selectedTone.id, selectedModel.id);
@@ -148,7 +154,6 @@ export default function Home() {
 
     setMessages(prev => [...prev, userMessage]);
 
-    // Create typing indicator
     const typingMessageId = crypto.randomUUID();
     const typingMessage: Message = {
       id: typingMessageId,
@@ -229,64 +234,85 @@ export default function Home() {
 
   return (
     <main className="h-screen w-screen overflow-hidden bg-black">
-      {/* Loading Sequence */}
-      <AnimatePresence>
-        {isLoading && <LoadingSequence onComplete={handleLoadingComplete} />}
+      <AnimatePresence mode="wait">
+        {/* Stage 1: Landing Page */}
+        {view === 'landing' && (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.5 }}
+            className="h-full w-full"
+          >
+            <LandingPage onStart={handleStart} />
+          </motion.div>
+        )}
+
+        {/* Stage 2: Loading Sequence */}
+        {view === 'loading' && (
+          <LoadingSequence onComplete={handleLoadingComplete} />
+        )}
+
+        {/* Stage 3: Chat Interface */}
+        {view === 'chat' && (
+          <motion.div
+            key="chat"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex h-full w-full flex-col"
+          >
+            {/* Mobile Header */}
+            <MobileHeader
+              onLeftMenuToggle={() => setLeftDrawerOpen(true)}
+            />
+
+            {/* 2-Column Layout */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Left Sidebar - Desktop */}
+              <LeftSidebar
+                chatSessions={chatSessions}
+                currentChatId={currentChatId}
+                selectedTone={selectedTone}
+                isCollapsed={sidebarCollapsed}
+                onNewChat={handleNewChat}
+                onSelectChat={handleSelectChat}
+                onDeleteChat={handleDeleteChat}
+                onSelectTone={handleToneSelect}
+                onToggleCollapse={handleToggleCollapse}
+                isMobile={false}
+              />
+
+              {/* Left Sidebar - Mobile Drawer */}
+              <LeftSidebar
+                chatSessions={chatSessions}
+                currentChatId={currentChatId}
+                selectedTone={selectedTone}
+                isCollapsed={false}
+                onNewChat={handleNewChat}
+                onSelectChat={handleSelectChat}
+                onDeleteChat={handleDeleteChat}
+                onSelectTone={handleToneSelect}
+                onToggleCollapse={handleToggleCollapse}
+                isMobile={true}
+                isOpen={leftDrawerOpen}
+                onClose={() => setLeftDrawerOpen(false)}
+              />
+
+              {/* Center - Chat Area */}
+              <ChatArea
+                messages={messages}
+                selectedTone={selectedTone}
+                selectedModel={selectedModel}
+                onSendMessage={handleSendMessage}
+                onFileUpload={handleFileUpload}
+                onSelectModel={handleModelSelect}
+                isGenerating={isGenerating}
+              />
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
-
-      {/* Main Chat Interface */}
-      {!isLoading && (
-        <div className="flex h-full w-full flex-col">
-          {/* Mobile Header */}
-          <MobileHeader
-            onLeftMenuToggle={() => setLeftDrawerOpen(true)}
-          />
-
-          {/* 2-Column Layout (sidebar removed) */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Left Sidebar - Desktop */}
-            <LeftSidebar
-              chatSessions={chatSessions}
-              currentChatId={currentChatId}
-              selectedTone={selectedTone}
-              isCollapsed={sidebarCollapsed}
-              onNewChat={handleNewChat}
-              onSelectChat={handleSelectChat}
-              onDeleteChat={handleDeleteChat}
-              onSelectTone={handleToneSelect}
-              onToggleCollapse={handleToggleCollapse}
-              isMobile={false}
-            />
-
-            {/* Left Sidebar - Mobile Drawer */}
-            <LeftSidebar
-              chatSessions={chatSessions}
-              currentChatId={currentChatId}
-              selectedTone={selectedTone}
-              isCollapsed={false}
-              onNewChat={handleNewChat}
-              onSelectChat={handleSelectChat}
-              onDeleteChat={handleDeleteChat}
-              onSelectTone={handleToneSelect}
-              onToggleCollapse={handleToggleCollapse}
-              isMobile={true}
-              isOpen={leftDrawerOpen}
-              onClose={() => setLeftDrawerOpen(false)}
-            />
-
-            {/* Center - Chat Area */}
-            <ChatArea
-              messages={messages}
-              selectedTone={selectedTone}
-              selectedModel={selectedModel}
-              onSendMessage={handleSendMessage}
-              onFileUpload={handleFileUpload}
-              onSelectModel={handleModelSelect}
-              isGenerating={isGenerating}
-            />
-          </div>
-        </div>
-      )}
     </main>
   );
 }
