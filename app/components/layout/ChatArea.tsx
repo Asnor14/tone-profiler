@@ -145,6 +145,7 @@ export default function ChatArea({
                 disabled={isGenerating}
                 language={language}
                 onLanguageChange={onLanguageChange}
+                languageLocked={messages.length > 0}
             />
         </div>
     );

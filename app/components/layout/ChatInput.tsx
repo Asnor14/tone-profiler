@@ -2,7 +2,7 @@
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, ArrowUp } from 'lucide-react';
+import { FileText, ArrowUp, Lock } from 'lucide-react';
 import Button from '@/app/components/ui/Button';
 
 interface ChatInputProps {
@@ -11,6 +11,7 @@ interface ChatInputProps {
     disabled?: boolean;
     language: 'english' | 'tagalog';
     onLanguageChange: (language: 'english' | 'tagalog') => void;
+    languageLocked?: boolean; // When true, language cannot be changed
 }
 
 export default function ChatInput({
@@ -19,8 +20,10 @@ export default function ChatInput({
     disabled = false,
     language,
     onLanguageChange,
+    languageLocked = false,
 }: ChatInputProps) {
     const [message, setMessage] = useState('');
+    const [showTooltip, setShowTooltip] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,8 +64,14 @@ export default function ChatInput({
         textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     };
 
-    const toggleLanguage = () => {
-        onLanguageChange(language === 'english' ? 'tagalog' : 'english');
+    const handleLanguageClick = () => {
+        if (languageLocked) {
+            // Show tooltip briefly
+            setShowTooltip(true);
+            setTimeout(() => setShowTooltip(false), 2000);
+        } else {
+            onLanguageChange(language === 'english' ? 'tagalog' : 'english');
+        }
     };
 
     return (
@@ -73,20 +82,38 @@ export default function ChatInput({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
             >
-                {/* Language Toggle Button */}
-                <motion.button
-                    onClick={toggleLanguage}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-300 flex-shrink-0 ${language === 'tagalog'
-                            ? 'bg-gradient-to-r from-yellow-500/20 to-blue-500/20 border border-yellow-500/50 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.3)]'
-                            : 'bg-gradient-to-r from-blue-500/20 to-gray-500/20 border border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                        }`}
-                    title={language === 'english' ? 'Switch to Tagalog' : 'Switch to English'}
-                >
-                    <span className="text-base">{language === 'tagalog' ? '🇵🇭' : '🇺🇸'}</span>
-                    <span>{language === 'tagalog' ? 'PH' : 'EN'}</span>
-                </motion.button>
+                {/* Language Toggle Button with Lock State */}
+                <div className="relative">
+                    <motion.button
+                        onClick={handleLanguageClick}
+                        whileHover={languageLocked ? {} : { scale: 1.05 }}
+                        whileTap={languageLocked ? {} : { scale: 0.95 }}
+                        className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-300 flex-shrink-0 ${languageLocked
+                                ? 'bg-[#1a1a1a] border border-[#333333] text-[#666666] cursor-not-allowed opacity-60'
+                                : language === 'tagalog'
+                                    ? 'bg-gradient-to-r from-yellow-500/20 to-blue-500/20 border border-yellow-500/50 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.3)]'
+                                    : 'bg-gradient-to-r from-blue-500/20 to-gray-500/20 border border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                            }`}
+                        title={languageLocked ? 'Start a new chat to change language' : (language === 'english' ? 'Switch to Tagalog' : 'Switch to English')}
+                    >
+                        {languageLocked && <Lock size={10} className="mr-0.5" />}
+                        <span className="text-base">{language === 'tagalog' ? '🇵🇭' : '🇺🇸'}</span>
+                        <span>{language === 'tagalog' ? 'PH' : 'EN'}</span>
+                    </motion.button>
+
+                    {/* Tooltip */}
+                    {showTooltip && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 5 }}
+                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#0a0a0a] border border-[#333333] rounded-lg shadow-xl z-50 whitespace-nowrap"
+                        >
+                            <p className="text-xs text-white font-medium">Start a new chat to change language</p>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#333333]" />
+                        </motion.div>
+                    )}
+                </div>
 
                 {/* File upload button */}
                 <input
