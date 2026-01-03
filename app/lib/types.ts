@@ -11,6 +11,9 @@ export interface Message {
     role: 'user' | 'assistant';
     timestamp: Date;
     toneId?: string;
+    toneLabel?: string;   // Store the persona name at time of message
+    toneImage?: string;   // Store the persona image at time of message
+    isTyping?: boolean;   // For typing indicator
 }
 
 export interface ChatHistory {

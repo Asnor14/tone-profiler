@@ -16,6 +16,7 @@ interface ChatAreaProps {
     onSendMessage: (message: string) => void;
     onFileUpload?: (file: File) => void;
     onSelectModel: (model: Model) => void;
+    isGenerating?: boolean;
 }
 
 export default function ChatArea({
@@ -25,6 +26,7 @@ export default function ChatArea({
     onSendMessage,
     onFileUpload,
     onSelectModel,
+    isGenerating = false,
 }: ChatAreaProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +80,8 @@ export default function ChatArea({
                                     <motion.button
                                         key={suggestion}
                                         onClick={() => onSendMessage(suggestion)}
-                                        className="rounded-full border border-[#262626] bg-[#171717] px-4 py-2 text-sm text-[#A3A3A3] transition-colors hover:border-[#A3A3A3] hover:text-white"
+                                        disabled={isGenerating}
+                                        className="rounded-full border border-[#262626] bg-[#171717] px-4 py-2 text-sm text-[#A3A3A3] transition-colors hover:border-[#A3A3A3] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
@@ -95,7 +98,6 @@ export default function ChatArea({
                                 <MessageBubble
                                     key={message.id}
                                     message={message}
-                                    selectedTone={selectedTone}
                                 />
                             ))}
                         </AnimatePresence>
@@ -108,6 +110,7 @@ export default function ChatArea({
             <ChatInput
                 onSendMessage={onSendMessage}
                 onFileUpload={onFileUpload}
+                disabled={isGenerating}
             />
         </div>
     );

@@ -17,6 +17,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState<Model>(MODELS[0]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | undefined>();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Mobile drawer states
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
@@ -44,6 +45,8 @@ export default function Home() {
   }, []);
 
   const handleSendMessage = useCallback(async (content: string) => {
+    if (isGenerating) return; // Prevent double sends
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       content,
@@ -52,6 +55,22 @@ export default function Home() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    // Create typing indicator message
+    const typingMessageId = crypto.randomUUID();
+    const typingMessage: Message = {
+      id: typingMessageId,
+      content: '',
+      role: 'assistant',
+      timestamp: new Date(),
+      toneId: selectedTone.id,
+      toneLabel: selectedTone.label,
+      toneImage: selectedTone.image,
+      isTyping: true,
+    };
+
+    setMessages((prev) => [...prev, typingMessage]);
+    setIsGenerating(true);
 
     // Call Python Backend
     try {
@@ -71,28 +90,43 @@ export default function Home() {
 
       const data = await response.json();
 
+      // Replace typing message with real response
       const assistantMessage: Message = {
-        id: crypto.randomUUID(),
+        id: typingMessageId, // Keep same ID to replace
         content: data.rewritten,
         role: 'assistant',
         timestamp: new Date(),
         toneId: selectedTone.id,
+        toneLabel: selectedTone.label,
+        toneImage: selectedTone.image,
+        isTyping: false,
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) =>
+        prev.map(msg => msg.id === typingMessageId ? assistantMessage : msg)
+      );
 
     } catch (error) {
       console.error("Backend error:", error);
+
+      // Replace typing message with error
       const errorMessage: Message = {
-        id: `error-${Date.now()}`,
+        id: typingMessageId,
         content: "⚠️ Error connecting to ChadGPT Backend. Make sure the API is running at localhost:8000.",
         role: 'assistant',
         timestamp: new Date(),
         toneId: 'neutral',
+        toneLabel: 'System',
+        toneImage: '/images/1.png',
+        isTyping: false,
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) =>
+        prev.map(msg => msg.id === typingMessageId ? errorMessage : msg)
+      );
+    } finally {
+      setIsGenerating(false);
     }
-  }, [selectedTone, selectedModel]);
+  }, [selectedTone, selectedModel, isGenerating]);
 
   const handleFileUpload = useCallback((file: File) => {
     const message = `📄 Uploaded file: ${file.name}`;
@@ -143,6 +177,7 @@ export default function Home() {
               onSendMessage={handleSendMessage}
               onFileUpload={handleFileUpload}
               onSelectModel={handleModelSelect}
+              isGenerating={isGenerating}
             />
 
             {/* Right Sidebar - Desktop */}
