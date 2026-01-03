@@ -49,14 +49,32 @@ export default function ChatArea({
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto -mt-16">
                 {messages.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center px-4 pt-16">
+                    <div className="relative flex h-full flex-col items-center justify-center px-4 pt-16">
+                        {/* Gradient Background */}
+                        <div
+                            className="absolute inset-0 opacity-0"
+                            style={{
+                                background: `radial-gradient(ellipse at center, rgba(100, 100, 100, 0.3) 0%, transparent 70%)`,
+                            }}
+                        />
+
+                        {/* Persona Background Image (blurred) */}
+                        <div className="absolute inset-0 overflow-hidden">
+                            <Image
+                                src={selectedTone.image}
+                                alt=""
+                                fill
+                                className="object-cover opacity-10 blur-sm scale-150"
+                            />
+                        </div>
+
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="flex flex-col items-center gap-4"
+                            className="relative z-10 flex flex-col items-center gap-4"
                         >
-                            <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[#262626]">
+                            <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-white/20 shadow-2xl shadow-white/10">
                                 <Image
                                     src={selectedTone.image}
                                     alt={selectedTone.label}
@@ -65,7 +83,7 @@ export default function ChatArea({
                                 />
                             </div>
 
-                            <h1 className="text-2xl font-semibold text-white">
+                            <h1 className="text-3xl font-bold text-white">
                                 ChadGPT
                             </h1>
 
@@ -81,7 +99,7 @@ export default function ChatArea({
                                         key={suggestion}
                                         onClick={() => onSendMessage(suggestion)}
                                         disabled={isGenerating}
-                                        className="rounded-full border border-[#262626] bg-[#171717] px-4 py-2 text-sm text-[#A3A3A3] transition-colors hover:border-[#A3A3A3] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="rounded-full border border-[#262626] bg-[#171717]/80 backdrop-blur-sm px-4 py-2 text-sm text-[#A3A3A3] transition-colors hover:border-[#A3A3A3] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >

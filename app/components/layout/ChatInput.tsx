@@ -60,7 +60,7 @@ export default function ChatInput({
     return (
         <div className="border-t border-[#262626] bg-[#171717] p-4">
             <motion.div
-                className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-[#262626] bg-[#262626]/50 p-2"
+                className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl bg-[#262626]/50 p-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}

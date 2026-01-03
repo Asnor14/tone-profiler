@@ -1,15 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Button from '@/app/components/ui/Button';
 
 interface MobileHeaderProps {
     onLeftMenuToggle: () => void;
-    onRightMenuToggle: () => void;
 }
 
-export default function MobileHeader({ onLeftMenuToggle, onRightMenuToggle }: MobileHeaderProps) {
+export default function MobileHeader({ onLeftMenuToggle }: MobileHeaderProps) {
     return (
         <motion.header
             className="flex md:hidden items-center justify-between border-b border-[#262626] bg-[#171717] px-4 py-3"
@@ -23,26 +22,23 @@ export default function MobileHeader({ onLeftMenuToggle, onRightMenuToggle }: Mo
                 size="sm"
                 onClick={onLeftMenuToggle}
                 className="h-10 w-10"
-                aria-label="Open history"
+                aria-label="Open menu"
             >
                 <Menu size={20} />
             </Button>
 
             {/* Logo - Center */}
-            <h1 className="text-lg font-semibold text-white">
-                ChadGPT
-            </h1>
+            <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">C</span>
+                </div>
+                <h1 className="text-lg font-semibold text-white">
+                    ChadGPT
+                </h1>
+            </div>
 
-            {/* Tone Selector - Right */}
-            <Button
-                variant="icon"
-                size="sm"
-                onClick={onRightMenuToggle}
-                className="h-10 w-10"
-                aria-label="Select tone"
-            >
-                <Sparkles size={20} />
-            </Button>
+            {/* Spacer for balance */}
+            <div className="w-10" />
         </motion.header>
     );
 }

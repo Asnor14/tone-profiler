@@ -11,9 +11,25 @@ export interface Message {
     role: 'user' | 'assistant';
     timestamp: Date;
     toneId?: string;
-    toneLabel?: string;   // Store the persona name at time of message
-    toneImage?: string;   // Store the persona image at time of message
-    isTyping?: boolean;   // For typing indicator
+    toneLabel?: string;
+    toneImage?: string;
+    modelName?: string;   // e.g., "Llama 3.2"
+    isTyping?: boolean;
+}
+
+export interface ChatSession {
+    id: string;
+    title: string;
+    messages: Message[];
+    toneId: string;
+    modelId: string;
+    createdAt: number;
+    updatedAt: number;
+}
+
+export interface AppPreferences {
+    sidebarCollapsed: boolean;
+    lastActiveChatId: string | null;
 }
 
 export interface ChatHistory {
