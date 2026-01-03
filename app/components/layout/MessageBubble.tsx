@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Volume2, Loader2, StopCircle } from 'lucide-react';
 import { Message } from '@/app/lib/types';
 
 interface MessageBubbleProps {
@@ -37,6 +37,9 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     const isUser = message.role === 'user';
     const isTyping = message.isTyping;
     const [copied, setCopied] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const handleCopy = async () => {
         try {
@@ -45,6 +48,68 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error('Failed to copy:', err);
+        }
+    };
+
+    const handleSpeak = async () => {
+        // If already speaking, stop
+        if (isSpeaking && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setIsSpeaking(false);
+            return;
+        }
+
+        setIsLoadingAudio(true);
+
+        try {
+            // Fetch audio from backend TTS endpoint
+            const response = await fetch('http://localhost:8000/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: message.content,
+                    toneId: message.toneId || 'neutral',
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('TTS Error:', errorText);
+                throw new Error(`TTS failed: ${response.statusText}`);
+            }
+
+            // Convert response to blob and create audio
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            // Create new audio element
+            const audio = new Audio(audioUrl);
+            audioRef.current = audio;
+
+            // Handle audio events
+            audio.onplay = () => {
+                setIsSpeaking(true);
+                setIsLoadingAudio(false);
+            };
+
+            audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            audio.onerror = (e) => {
+                console.error('Audio playback error:', e);
+                setIsSpeaking(false);
+                setIsLoadingAudio(false);
+            };
+
+            // Play the audio
+            await audio.play();
+        } catch (err) {
+            console.error('Failed to speak:', err);
+            setIsLoadingAudio(false);
+            setIsSpeaking(false);
         }
     };
 
@@ -105,26 +170,55 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                         )}
                     </div>
 
-                    {/* Copy button - only for assistant messages */}
+                    {/* Action buttons - only for assistant messages */}
                     {!isUser && !isTyping && (
-                        <motion.button
-                            onClick={handleCopy}
-                            className="absolute -bottom-6 left-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs text-[#525252] hover:text-white"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            {copied ? (
-                                <>
-                                    <Check size={12} className="text-green-400" />
-                                    <span className="text-green-400">Copied!</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Copy size={12} />
-                                    <span>Copy</span>
-                                </>
-                            )}
-                        </motion.button>
+                        <div className="absolute -bottom-6 left-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-3">
+                            {/* Copy button */}
+                            <motion.button
+                                onClick={handleCopy}
+                                className="flex items-center gap-1 text-xs text-[#525252] hover:text-white"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                {copied ? (
+                                    <>
+                                        <Check size={12} className="text-green-400" />
+                                        <span className="text-green-400">Copied!</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy size={12} />
+                                        <span>Copy</span>
+                                    </>
+                                )}
+                            </motion.button>
+
+                            {/* Read Aloud button */}
+                            <motion.button
+                                onClick={handleSpeak}
+                                disabled={isLoadingAudio}
+                                className="flex items-center gap-1 text-xs text-[#525252] hover:text-white disabled:opacity-50"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                {isLoadingAudio ? (
+                                    <>
+                                        <Loader2 size={12} className="animate-spin" />
+                                        <span>Loading...</span>
+                                    </>
+                                ) : isSpeaking ? (
+                                    <>
+                                        <StopCircle size={12} className="text-red-400" />
+                                        <span className="text-red-400">Stop</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Volume2 size={12} />
+                                        <span>Read</span>
+                                    </>
+                                )}
+                            </motion.button>
+                        </div>
                     )}
                 </div>
             </div>

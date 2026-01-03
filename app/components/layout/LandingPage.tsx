@@ -77,16 +77,31 @@ const PERSONAS = [
 
 // Team members
 const TEAM_MEMBERS = [
-    'Quincey Lorin Ellazo',
-    'Asnor Arellanon',
-    'Kristopher Kyle Palawan',
-    'Paul Xyre Asanza'
+    'Asnor Sumdad',
+    'Jay Ann Bantayao',
+    'Mark Dela Cruz',
+    'Warlito Madridejos Jr'
 ];
 
 // Animation variants
 const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const fadeInDown = {
+    hidden: { opacity: 0, y: -40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const fadeInLeft = {
+    hidden: { opacity: 0, x: -40 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
+};
+
+const fadeInRight = {
+    hidden: { opacity: 0, x: 40 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
 };
 
 const staggerContainer = {
@@ -100,6 +115,16 @@ const staggerContainer = {
 const scaleIn = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
+};
+
+const float3D = {
+    hidden: { opacity: 0, rotateY: -30, scale: 0.8 },
+    visible: {
+        opacity: 1,
+        rotateY: 0,
+        scale: 1,
+        transition: { duration: 0.8 }
+    }
 };
 
 // Feature Card Component
@@ -123,18 +148,35 @@ function FeatureCard({ icon: Icon, title, description }: {
 }
 
 // Persona Card Component
-function PersonaCard({ persona }: { persona: typeof PERSONAS[0] }) {
-    const [isHovered, setIsHovered] = useState(false);
+function PersonaCard({
+    persona,
+    index,
+    isAnyHovered,
+    isThisHovered,
+    onHover,
+    onLeave
+}: {
+    persona: typeof PERSONAS[0];
+    index: number;
+    isAnyHovered: boolean;
+    isThisHovered: boolean;
+    onHover: () => void;
+    onLeave: () => void;
+}) {
+    // Last 2 cards (index 3 and 4) show popup on the left
+    const showOnLeft = index >= 3;
 
     return (
         <motion.div
             variants={fadeInUp}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="relative flex-shrink-0 w-48 rounded-2xl border border-[#262626] bg-[#171717] p-4 transition-all duration-300 hover:border-[#525252] hover:bg-[#1a1a1a] cursor-pointer"
+            onMouseEnter={onHover}
+            onMouseLeave={onLeave}
+            style={{ zIndex: isThisHovered ? 100 : 1 }}
+            className={`relative w-full rounded-2xl border border-[#262626] bg-[#171717] p-6 transition-all duration-300 hover:border-[#525252] hover:bg-[#1a1a1a] cursor-pointer ${isAnyHovered && !isThisHovered ? 'opacity-40 blur-[2px] scale-95' : 'opacity-100 blur-0 scale-100'
+                }`}
         >
             <div className="flex flex-col items-center text-center">
-                <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-[#262626] mb-3">
+                <div className="relative h-24 w-24 overflow-hidden rounded-full border-3 border-[#333333] mb-4 shadow-lg">
                     <Image
                         src={persona.image}
                         alt={persona.name}
@@ -142,20 +184,33 @@ function PersonaCard({ persona }: { persona: typeof PERSONAS[0] }) {
                         className="object-cover"
                     />
                 </div>
-                <h3 className="text-sm font-semibold text-white">{persona.name}</h3>
-                <p className="text-xs text-[#525252] mt-1">{persona.descriptor}</p>
+                <h3 className="text-base font-semibold text-white">{persona.name}</h3>
+                <p className="text-sm text-[#A3A3A3] mt-1">{persona.descriptor}</p>
             </div>
 
-            {/* Hover tooltip with sample */}
+            {/* Hover tooltip - right side for first 3 cards, left side for last 2 */}
             <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-                className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-xl border border-[#262626] bg-[#0a0a0a] p-3 shadow-xl z-20 pointer-events-none"
+                initial={{ opacity: 0, x: showOnLeft ? 10 : -10 }}
+                animate={{ opacity: isThisHovered ? 1 : 0, x: isThisHovered ? 0 : (showOnLeft ? 10 : -10) }}
+                className={`hidden md:block absolute top-1/2 -translate-y-1/2 w-72 rounded-xl border border-[#333333] bg-[#0a0a0a] p-4 shadow-2xl z-50 pointer-events-none ${showOnLeft ? 'right-full mr-4' : 'left-full ml-4'
+                    }`}
             >
                 <p className="text-xs text-[#525252] mb-1">Original:</p>
-                <p className="text-xs text-[#A3A3A3] mb-2">"{persona.sample.original}"</p>
+                <p className="text-sm text-[#A3A3A3] mb-3">&quot;{persona.sample.original}&quot;</p>
                 <p className="text-xs text-[#525252] mb-1">{persona.name}:</p>
-                <p className="text-xs text-white">"{persona.sample.transformed}"</p>
+                <p className="text-sm text-white">&quot;{persona.sample.transformed}&quot;</p>
+            </motion.div>
+
+            {/* Mobile tooltip - appears above */}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: isThisHovered ? 1 : 0, y: isThisHovered ? 0 : 10 }}
+                className="md:hidden absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 rounded-xl border border-[#333333] bg-[#0a0a0a] p-4 shadow-2xl z-50 pointer-events-none"
+            >
+                <p className="text-xs text-[#525252] mb-1">Original:</p>
+                <p className="text-sm text-[#A3A3A3] mb-2">&quot;{persona.sample.original}&quot;</p>
+                <p className="text-xs text-[#525252] mb-1">{persona.name}:</p>
+                <p className="text-sm text-white">&quot;{persona.sample.transformed}&quot;</p>
             </motion.div>
         </motion.div>
     );
@@ -211,6 +266,7 @@ function TroubleshootItem({ problem, solution }: { problem: string; solution: st
 
 export default function LandingPage({ onStart }: LandingPageProps) {
     const [troubleshootOpen, setTroubleshootOpen] = useState(false);
+    const [hoveredPersonaId, setHoveredPersonaId] = useState<string | null>(null);
 
     return (
         <div className="min-h-screen w-full overflow-y-auto bg-black">
@@ -227,10 +283,13 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                     variants={staggerContainer}
                     className="relative z-10 flex flex-col items-center text-center"
                 >
-                    {/* Logo */}
+                    {/* Logo with 3D effect */}
                     <motion.div
-                        variants={scaleIn}
+                        variants={float3D}
                         className="relative mb-8"
+                        style={{ perspective: 1000 }}
+                        whileHover={{ rotateY: 15, rotateX: 5, scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 300 }}
                     >
                         <div className="absolute -inset-4 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-2xl" />
                         <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white/20 shadow-2xl">
@@ -271,7 +330,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                     <motion.button
                         variants={scaleIn}
                         onClick={onStart}
-                        className="group relative overflow-hidden rounded-full bg-white px-10 py-4 text-lg font-bold text-black transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                        className="group relative overflow-hidden rounded-full bg-white px-10 py-4 text-lg font-bold text-black transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] mb-16"
                     >
                         <span className="relative z-10">INITIALIZE SYSTEM</span>
                         <motion.div
@@ -281,11 +340,12 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                         />
                     </motion.button>
 
-                    {/* Scroll indicator */}
+                    {/* Scroll indicator with label */}
                     <motion.div
                         variants={fadeInUp}
-                        className="absolute bottom-10 left-1/2 -translate-x-1/2"
+                        className="flex flex-col items-center gap-2"
                     >
+                        <span className="text-xs text-[#525252] uppercase tracking-widest">Scroll to explore</span>
                         <motion.div
                             animate={{ y: [0, 8, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
@@ -335,6 +395,24 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             into their desired communication style—from professional formality to sarcastic wit.
                         </p>
                     </motion.div>
+
+                    {/* Tech Stack Carousel */}
+                    <motion.div variants={fadeInUp} className="mt-10">
+                        <p className="text-xs text-[#525252] uppercase tracking-widest mb-4">Powered By</p>
+                        <div className="relative overflow-hidden h-10">
+                            <motion.div
+                                className="flex gap-6 absolute whitespace-nowrap"
+                                animate={{ x: ['0%', '-50%'] }}
+                                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                            >
+                                {['Next.js', 'React', 'TypeScript', 'FastAPI', 'Python', 'Ollama', 'Llama 3.2', 'FLAN-T5', 'Transformers', 'Tailwind CSS', 'Framer Motion', 'Next.js', 'React', 'TypeScript', 'FastAPI', 'Python', 'Ollama', 'Llama 3.2', 'FLAN-T5', 'Transformers', 'Tailwind CSS', 'Framer Motion'].map((tech, i) => (
+                                    <span key={i} className="text-sm text-[#A3A3A3] font-medium px-4 py-2 rounded-full border border-[#262626] bg-[#171717]">
+                                        {tech}
+                                    </span>
+                                ))}
+                            </motion.div>
+                        </div>
+                    </motion.div>
                 </motion.div>
             </section>
 
@@ -359,10 +437,18 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                         </p>
                     </motion.div>
 
-                    {/* Horizontal scrolling personas */}
-                    <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-thin justify-center flex-wrap">
-                        {PERSONAS.map((persona) => (
-                            <PersonaCard key={persona.id} persona={persona} />
+                    {/* Responsive grid of personas */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
+                        {PERSONAS.map((persona, index) => (
+                            <PersonaCard
+                                key={persona.id}
+                                persona={persona}
+                                index={index}
+                                isAnyHovered={hoveredPersonaId !== null}
+                                isThisHovered={hoveredPersonaId === persona.id}
+                                onHover={() => setHoveredPersonaId(persona.id)}
+                                onLeave={() => setHoveredPersonaId(null)}
+                            />
                         ))}
                     </div>
                 </motion.div>

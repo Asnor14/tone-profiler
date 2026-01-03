@@ -242,7 +242,7 @@ export default function Home() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.5 }}
-            className="h-full w-full"
+            className="h-full w-full overflow-y-auto"
           >
             <LandingPage onStart={handleStart} />
           </motion.div>
