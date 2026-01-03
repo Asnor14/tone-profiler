@@ -24,13 +24,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ElevenLabs Male Voice ID mapping per tone persona
+# ElevenLabs "All-Chad" Voice Mapping (Deep, Muscular, Adult Voices Only)
 VOICE_MAP = {
-    "neutral": "pNInz6obpgDQGcFmaJgB",     # Adam - Deep, narration style
-    "formal": "ErXwobaYiN019PkySvjV",       # Antoni - Polite, well-spoken
-    "urgent": "2EiwWnXFnvU5JabPnv8n",       # Clyde - Deep, authoritative
-    "optimistic": "TxGEqnHWrfWFTfGW9XjX",   # Josh - Young, energetic, happy
-    "sarcastic": "MF3mGyEYCl7XYWbV9V6O",    # Fin - Low pitch, dry, monotone
+    # Neutral: "Adam" - The standard deep narrator voice (Default Chad)
+    "neutral": "pNInz6obpgDQGcFmaJgB",
+    
+    # Formal: "Antoni" - Well-spoken, polite, but adult and firm (Gentleman Chad)
+    "formal": "ErXwobaYiN019PkySvjV",
+    
+    # Urgent: "Clyde" - Deep, authoritative, slightly aggressive (Commander Chad)
+    "urgent": "2EiwWnXFnvU5JabPnv8n",
+    
+    # Optimistic: "Drew" - Bold, news-anchor style, very confident (Believer Chad)
+    "optimistic": "29vD33N1CtxCmqQRPOHJ",
+    
+    # Sarcastic: "Bill" - Very deep, raspy, older & cynical (Based Chad)
+    "sarcastic": "pqHfZKP75CvOlQylNhV4",
 }
 
 class GenerateRequest(BaseModel):
