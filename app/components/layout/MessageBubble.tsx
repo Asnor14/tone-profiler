@@ -64,7 +64,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         try {
             // Fetch audio from backend TTS endpoint
-            const response = await fetch('http://localhost:8000/tts', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/tts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
