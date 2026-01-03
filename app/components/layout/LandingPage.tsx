@@ -13,12 +13,75 @@ import {
     ChevronDown,
     ChevronUp,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    Activity
 } from 'lucide-react';
 
 interface LandingPageProps {
     onStart: () => void;
 }
+
+// Persona data for showcase
+const PERSONAS = [
+    {
+        id: 'neutral',
+        name: 'Default Chad',
+        descriptor: 'The Balanced',
+        image: '/images/1.png',
+        sample: {
+            original: "I'll be there soon.",
+            transformed: "I'll be arriving shortly."
+        }
+    },
+    {
+        id: 'formal',
+        name: 'Formal Gentleman',
+        descriptor: 'The Professional',
+        image: '/images/2.png',
+        sample: {
+            original: "Can you help me?",
+            transformed: "I would be most grateful for your assistance in this matter."
+        }
+    },
+    {
+        id: 'urgent',
+        name: 'Urgent Commander',
+        descriptor: 'The Director',
+        image: '/images/3.png',
+        sample: {
+            original: "Please finish the report.",
+            transformed: "COMPLETE THE REPORT. DEADLINE IS NON-NEGOTIABLE. EXECUTE NOW."
+        }
+    },
+    {
+        id: 'optimistic',
+        name: 'Optimistic Believer',
+        descriptor: 'The Motivator',
+        image: '/images/4.png',
+        sample: {
+            original: "This might be difficult.",
+            transformed: "This is an amazing opportunity to grow and learn something incredible!"
+        }
+    },
+    {
+        id: 'sarcastic',
+        name: 'Sarcastic Skeptic',
+        descriptor: 'The Cynic',
+        image: '/images/5.png',
+        sample: {
+            original: "I'm arriving.",
+            transformed: "Oh look who finally decided to grace us with their presence."
+        }
+    }
+];
+
+// Team members
+const TEAM_MEMBERS = [
+    'Quincey Lorin Ellazo',
+    'Asnor Arellanon',
+    'Kristopher Kyle Palawan',
+    'Paul Xyre Asanza'
+];
 
 // Animation variants
 const fadeInUp = {
@@ -55,6 +118,45 @@ function FeatureCard({ icon: Icon, title, description }: {
             </div>
             <h3 className="mb-2 text-lg font-semibold text-white">{title}</h3>
             <p className="text-sm leading-relaxed text-[#A3A3A3]">{description}</p>
+        </motion.div>
+    );
+}
+
+// Persona Card Component
+function PersonaCard({ persona }: { persona: typeof PERSONAS[0] }) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <motion.div
+            variants={fadeInUp}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="relative flex-shrink-0 w-48 rounded-2xl border border-[#262626] bg-[#171717] p-4 transition-all duration-300 hover:border-[#525252] hover:bg-[#1a1a1a] cursor-pointer"
+        >
+            <div className="flex flex-col items-center text-center">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-[#262626] mb-3">
+                    <Image
+                        src={persona.image}
+                        alt={persona.name}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+                <h3 className="text-sm font-semibold text-white">{persona.name}</h3>
+                <p className="text-xs text-[#525252] mt-1">{persona.descriptor}</p>
+            </div>
+
+            {/* Hover tooltip with sample */}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+                className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-xl border border-[#262626] bg-[#0a0a0a] p-3 shadow-xl z-20 pointer-events-none"
+            >
+                <p className="text-xs text-[#525252] mb-1">Original:</p>
+                <p className="text-xs text-[#A3A3A3] mb-2">"{persona.sample.original}"</p>
+                <p className="text-xs text-[#525252] mb-1">{persona.name}:</p>
+                <p className="text-xs text-white">"{persona.sample.transformed}"</p>
+            </motion.div>
         </motion.div>
     );
 }
@@ -112,8 +214,8 @@ export default function LandingPage({ onStart }: LandingPageProps) {
 
     return (
         <div className="min-h-screen w-full overflow-y-auto bg-black">
-            {/* Hero Section */}
-            <section className="relative flex min-h-screen flex-col items-center justify-center px-6 py-20">
+            {/* ====== HERO SECTION ====== */}
+            <section className="relative flex min-h-screen flex-col items-center justify-center px-6 py-24">
                 {/* Background Glow */}
                 <div className="absolute inset-0 overflow-hidden">
                     <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-3xl" />
@@ -195,8 +297,79 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 </motion.div>
             </section>
 
-            {/* Feature Glossary Section */}
-            <section className="px-6 py-20">
+            {/* ====== MISSION BRIEF (ABOUT) SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24">
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-100px" }}
+                    variants={staggerContainer}
+                    className="mx-auto max-w-3xl text-center"
+                >
+                    <motion.div variants={fadeInUp} className="mb-8">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 mb-6">
+                            <Activity className="h-4 w-4 text-green-500" />
+                            <span className="text-sm font-medium text-green-400">System Active</span>
+                        </div>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#525252]">
+                            Mission Directive
+                        </p>
+                        <h2 className="text-3xl font-bold text-white md:text-4xl">
+                            Project Directive: CPE22
+                        </h2>
+                    </motion.div>
+
+                    <motion.div variants={fadeInUp} className="space-y-4">
+                        <p className="text-lg leading-relaxed text-gray-300">
+                            ChadGPT is a <span className="text-white font-semibold">Tone Profiling Engine</span> developed
+                            to demonstrate real-time style transfer capabilities using advanced natural language processing.
+                        </p>
+                        <p className="text-lg leading-relaxed text-gray-300">
+                            The system leverages <span className="text-white font-semibold">High-Level N-Gram models</span> via
+                            Google's FLAN-T5 architecture for fast, instruction-tuned outputs, and
+                            <span className="text-white font-semibold"> Generative Reasoning</span> via Meta's Llama 3.2
+                            for nuanced, context-aware transformations.
+                        </p>
+                        <p className="text-lg leading-relaxed text-gray-300">
+                            Users can seamlessly switch between five distinct "Chad Personas" to transform any input text
+                            into their desired communication style—from professional formality to sarcastic wit.
+                        </p>
+                    </motion.div>
+                </motion.div>
+            </section>
+
+            {/* ====== PERSONA MATRIX (SHOWCASE) SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24 overflow-hidden">
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-100px" }}
+                    variants={staggerContainer}
+                    className="mx-auto max-w-5xl"
+                >
+                    <motion.div variants={fadeInUp} className="mb-12 text-center">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#525252]">
+                            Persona Matrix
+                        </p>
+                        <h2 className="text-3xl font-bold text-white md:text-4xl">
+                            Select Your Modality
+                        </h2>
+                        <p className="mt-3 text-sm text-[#A3A3A3]">
+                            Hover over a persona to see sample transformations
+                        </p>
+                    </motion.div>
+
+                    {/* Horizontal scrolling personas */}
+                    <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-thin justify-center flex-wrap">
+                        {PERSONAS.map((persona) => (
+                            <PersonaCard key={persona.id} persona={persona} />
+                        ))}
+                    </div>
+                </motion.div>
+            </section>
+
+            {/* ====== SYSTEM INTELLIGENCE (FEATURE GLOSSARY) SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24">
                 <motion.div
                     initial="hidden"
                     whileInView="visible"
@@ -233,8 +406,8 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 </motion.div>
             </section>
 
-            {/* User Manual Section */}
-            <section className="border-t border-[#171717] px-6 py-20">
+            {/* ====== USER MANUAL SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24">
                 <motion.div
                     initial="hidden"
                     whileInView="visible"
@@ -274,8 +447,8 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 </motion.div>
             </section>
 
-            {/* Troubleshooting Section */}
-            <section className="border-t border-[#171717] px-6 py-20">
+            {/* ====== TROUBLESHOOTING SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24">
                 <motion.div
                     initial="hidden"
                     whileInView="visible"
@@ -330,27 +503,51 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 </motion.div>
             </section>
 
-            {/* Footer CTA */}
-            <section className="border-t border-[#171717] px-6 py-16">
+            {/* ====== SYSTEM ARCHITECTS (FOOTER CREDITS) SECTION ====== */}
+            <section className="border-t border-[#171717] px-6 py-24">
                 <motion.div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    variants={fadeInUp}
+                    variants={staggerContainer}
                     className="mx-auto max-w-xl text-center"
                 >
-                    <h2 className="mb-6 text-2xl font-bold text-white md:text-3xl">
-                        Ready to Begin?
-                    </h2>
-                    <button
-                        onClick={onStart}
-                        className="rounded-full border-2 border-white bg-transparent px-8 py-3 font-semibold text-white transition-all hover:bg-white hover:text-black"
-                    >
-                        LAUNCH ChadGPT
-                    </button>
-                    <p className="mt-6 text-xs text-[#525252]">
-                        v1.0.0 • Built with Next.js, FastAPI, FLAN-T5 & Llama 3.2
-                    </p>
+                    <motion.div variants={fadeInUp}>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#525252]">
+                            System Architects
+                        </p>
+                        <h2 className="mb-8 text-2xl font-bold text-white md:text-3xl">
+                            The Team Behind ChadGPT
+                        </h2>
+                    </motion.div>
+
+                    <motion.div variants={fadeInUp} className="mb-8">
+                        <p className="text-lg text-gray-300 mb-4">
+                            Engineered by:
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                            {TEAM_MEMBERS.map((member, index) => (
+                                <span key={member} className="text-white font-medium">
+                                    {member}{index < TEAM_MEMBERS.length - 1 && <span className="text-[#525252] ml-4">•</span>}
+                                </span>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    <motion.div variants={fadeInUp}>
+                        <button
+                            onClick={onStart}
+                            className="rounded-full border-2 border-white bg-transparent px-8 py-3 font-semibold text-white transition-all hover:bg-white hover:text-black mb-8"
+                        >
+                            LAUNCH ChadGPT
+                        </button>
+                        <p className="text-sm text-[#A3A3A3] mb-2">
+                            Submitted for <span className="text-white font-medium">CPE22</span> - Final Requirement
+                        </p>
+                        <p className="text-xs text-[#525252]">
+                            v1.0.0 • Built with Next.js, FastAPI, FLAN-T5 & Llama 3.2
+                        </p>
+                    </motion.div>
                 </motion.div>
             </section>
         </div>
