@@ -18,6 +18,8 @@ interface ChatAreaProps {
     onSelectModel: (model: Model) => void;
     onReaction?: (messageId: string, reaction: string | null) => void;
     isGenerating?: boolean;
+    language: 'english' | 'tagalog';
+    onLanguageChange: (language: 'english' | 'tagalog') => void;
 }
 
 export default function ChatArea({
@@ -29,6 +31,8 @@ export default function ChatArea({
     onSelectModel,
     onReaction,
     isGenerating = false,
+    language,
+    onLanguageChange,
 }: ChatAreaProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -93,10 +97,17 @@ export default function ChatArea({
                                 Currently in <span className="text-white font-medium">{selectedTone.label}</span> mode
                                 <br />
                                 Using <span className="text-white font-medium">{selectedModel.name}</span>
+                                <br />
+                                Language: <span className={`font-medium ${language === 'tagalog' ? 'text-yellow-300' : 'text-blue-300'}`}>
+                                    {language === 'tagalog' ? '🇵🇭 Tagalog' : '🇺🇸 English'}
+                                </span>
                             </p>
 
                             <div className="mt-4 flex flex-wrap justify-center gap-2">
-                                {['Write a poem', 'Explain a concept', 'Help me brainstorm'].map((suggestion) => (
+                                {(language === 'tagalog'
+                                    ? ['Gumawa ng tula', 'Ipaliwanag yan', 'Tulungan mo ako mag-isip']
+                                    : ['Write a poem', 'Explain a concept', 'Help me brainstorm']
+                                ).map((suggestion) => (
                                     <motion.button
                                         key={suggestion}
                                         onClick={() => onSendMessage(suggestion)}
@@ -132,6 +143,8 @@ export default function ChatArea({
                 onSendMessage={onSendMessage}
                 onFileUpload={onFileUpload}
                 disabled={isGenerating}
+                language={language}
+                onLanguageChange={onLanguageChange}
             />
         </div>
     );

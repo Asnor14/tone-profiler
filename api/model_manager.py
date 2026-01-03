@@ -41,19 +41,19 @@ class ModelManager:
             self.flan_t5_model.to("cpu")
             print("FLAN-T5 loaded successfully")
 
-    def generate(self, text: str, tone_id: str, model_id: str, max_tokens: int = 200) -> str:
+    def generate(self, text: str, tone_id: str, model_id: str, language: str = "english", max_tokens: int = 200) -> str:
         """Generate text using either Ollama or FLAN-T5"""
         
         if model_id == ModelID.FLAN_T5:
-            return self._generate_flan_t5(text, tone_id, max_tokens)
+            return self._generate_flan_t5(text, tone_id, language, max_tokens)
         elif model_id == ModelID.LLAMA_3_2:
-            return self._generate_ollama(text, tone_id, max_tokens)
+            return self._generate_ollama(text, tone_id, language, max_tokens)
         else:
             raise ValueError(f"Unknown model ID: {model_id}")
 
-    def _generate_ollama(self, text: str, tone_id: str, max_tokens: int) -> str:
+    def _generate_ollama(self, text: str, tone_id: str, language: str, max_tokens: int) -> str:
         """Generate using Ollama's REST API"""
-        prompt = get_ollama_prompt(text, tone_id)
+        prompt = get_ollama_prompt(text, tone_id, language)
         
         payload = {
             "model": "llama3.2:3b",  # Ollama model name
@@ -84,11 +84,11 @@ class ModelManager:
         except requests.exceptions.Timeout:
             raise ValueError("Ollama request timed out. The model may still be loading.")
 
-    def _generate_flan_t5(self, text: str, tone_id: str, max_tokens: int) -> str:
+    def _generate_flan_t5(self, text: str, tone_id: str, language: str, max_tokens: int) -> str:
         """Generate using local FLAN-T5"""
         self._load_flan_t5()
         
-        prompt = get_t5_prompt_text(text, tone_id)
+        prompt = get_t5_prompt_text(text, tone_id, language)
         
         inputs = self.flan_t5_tokenizer(prompt, return_tensors="pt").to("cpu")
         outputs = self.flan_t5_model.generate(

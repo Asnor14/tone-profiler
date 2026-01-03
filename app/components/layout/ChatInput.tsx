@@ -9,12 +9,16 @@ interface ChatInputProps {
     onSendMessage: (message: string) => void;
     onFileUpload?: (file: File) => void;
     disabled?: boolean;
+    language: 'english' | 'tagalog';
+    onLanguageChange: (language: 'english' | 'tagalog') => void;
 }
 
 export default function ChatInput({
     onSendMessage,
     onFileUpload,
     disabled = false,
+    language,
+    onLanguageChange,
 }: ChatInputProps) {
     const [message, setMessage] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -57,6 +61,10 @@ export default function ChatInput({
         textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     };
 
+    const toggleLanguage = () => {
+        onLanguageChange(language === 'english' ? 'tagalog' : 'english');
+    };
+
     return (
         <div className="border-t border-[#262626] bg-[#171717] p-4">
             <motion.div
@@ -65,6 +73,21 @@ export default function ChatInput({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
             >
+                {/* Language Toggle Button */}
+                <motion.button
+                    onClick={toggleLanguage}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-300 flex-shrink-0 ${language === 'tagalog'
+                            ? 'bg-gradient-to-r from-yellow-500/20 to-blue-500/20 border border-yellow-500/50 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.3)]'
+                            : 'bg-gradient-to-r from-blue-500/20 to-gray-500/20 border border-blue-500/50 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                        }`}
+                    title={language === 'english' ? 'Switch to Tagalog' : 'Switch to English'}
+                >
+                    <span className="text-base">{language === 'tagalog' ? '🇵🇭' : '🇺🇸'}</span>
+                    <span>{language === 'tagalog' ? 'PH' : 'EN'}</span>
+                </motion.button>
+
                 {/* File upload button */}
                 <input
                     ref={fileInputRef}
@@ -89,7 +112,7 @@ export default function ChatInput({
                     value={message}
                     onChange={handleTextareaChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Message ChadGPT..."
+                    placeholder={language === 'tagalog' ? 'Mag-type ka dito...' : 'Message ChadGPT...'}
                     disabled={disabled}
                     rows={1}
                     className="flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white placeholder-[#A3A3A3] outline-none scrollbar-thin"

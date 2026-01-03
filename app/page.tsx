@@ -28,6 +28,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState<Model>(MODELS[0]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [language, setLanguage] = useState<'english' | 'tagalog'>('english');
 
   // Chat history state
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
@@ -178,6 +179,7 @@ export default function Home() {
           text: content,
           toneId: selectedTone.id,
           modelId: selectedModel.id,
+          language: language,
         }),
       });
 
@@ -315,6 +317,8 @@ export default function Home() {
                 onSelectModel={handleModelSelect}
                 onReaction={handleReaction}
                 isGenerating={isGenerating}
+                language={language}
+                onLanguageChange={setLanguage}
               />
             </div>
           </motion.div>

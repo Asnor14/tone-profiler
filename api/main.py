@@ -46,6 +46,7 @@ class GenerateRequest(BaseModel):
     text: str
     toneId: str
     modelId: str
+    language: str = "english"  # "english" or "tagalog"
 
 class TTSRequest(BaseModel):
     text: str
@@ -64,13 +65,14 @@ async def generate_text(request: GenerateRequest):
         if request.modelId not in [m.value for m in ModelID]:
             raise HTTPException(status_code=400, detail=f"Invalid modelId: {request.modelId}")
         
-        print(f"Received request: Model={request.modelId}, Tone={request.toneId}")
+        print(f"Received request: Model={request.modelId}, Tone={request.toneId}, Language={request.language}")
         
         # Generate
         output = model_manager.generate(
             text=request.text,
             tone_id=request.toneId,
-            model_id=request.modelId
+            model_id=request.modelId,
+            language=request.language
         )
         
         # Clean output (remove common prefixes if model adds them)
