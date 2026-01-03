@@ -43,7 +43,7 @@ export default function LeftSidebar({
     onClose,
 }: LeftSidebarProps) {
 
-    const sidebarWidth = isCollapsed ? 'w-16' : 'w-72';
+    const sidebarWidth = isCollapsed ? 'w-16' : 'w-64';
 
     const content = (
         <div className="flex h-full flex-col bg-[#171717]">
@@ -245,7 +245,7 @@ export default function LeftSidebar({
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="fixed left-0 top-0 z-50 h-full w-72 md:hidden"
+                            className="fixed left-0 top-0 z-50 h-full w-64 md:hidden"
                         >
                             {content}
                         </motion.aside>
@@ -259,7 +259,7 @@ export default function LeftSidebar({
     return (
         <motion.aside
             className={`hidden md:flex h-full flex-col border-r border-[#262626] ${sidebarWidth}`}
-            animate={{ width: isCollapsed ? 64 : 288 }}
+            animate={{ width: isCollapsed ? 64 : 256 }}
             transition={{ duration: 0.2 }}
         >
             {content}

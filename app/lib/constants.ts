@@ -49,3 +49,5 @@ export const MOCK_CHAT_HISTORY = [
     { id: '2', title: 'Discussing productivity tips', createdAt: new Date() },
     { id: '3', title: 'Code review session', createdAt: new Date() },
 ];
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';

@@ -110,7 +110,7 @@ export default function ChatArea({
                         </motion.div>
                     </div>
                 ) : (
-                    <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 pt-20">
+                    <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 pt-20">
                         <AnimatePresence mode="popLayout">
                             {messages.map((message) => (
                                 <MessageBubble

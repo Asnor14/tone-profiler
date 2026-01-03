@@ -233,7 +233,7 @@ export default function Home() {
   );
 
   return (
-    <main className="h-screen w-screen overflow-hidden bg-black">
+    <main className="h-[100dvh] w-screen overflow-hidden bg-black">
       <AnimatePresence mode="wait">
         {/* Stage 1: Landing Page */}
         {view === 'landing' && (
