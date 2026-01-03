@@ -2,14 +2,18 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Copy, Check, Volume2, Loader2, Square } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Copy, Check, Volume2, Loader2, Square, Smile } from 'lucide-react';
 import { Message } from '@/app/lib/types';
 import { API_BASE_URL } from '@/app/lib/constants';
 
 interface MessageBubbleProps {
     message: Message;
+    onReaction?: (messageId: string, reaction: string | null) => void;
 }
+
+// Available reactions
+const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
 // Typing indicator animation
 function TypingIndicator() {
@@ -57,14 +61,27 @@ function SoundwaveAnimation() {
     );
 }
 
-export default function MessageBubble({ message }: MessageBubbleProps) {
+export default function MessageBubble({ message, onReaction }: MessageBubbleProps) {
     const isUser = message.role === 'user';
     const isTyping = message.isTyping;
     const [copied, setCopied] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+    const [showReactionPicker, setShowReactionPicker] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const cachedAudioUrlRef = useRef<string | null>(null);
+    const reactionPickerRef = useRef<HTMLDivElement>(null);
+
+    // Close reaction picker when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (reactionPickerRef.current && !reactionPickerRef.current.contains(event.target as Node)) {
+                setShowReactionPicker(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Cleanup audio URL on unmount
     useEffect(() => {
@@ -85,8 +102,16 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         }
     };
 
+    const handleReactionClick = (emoji: string) => {
+        if (onReaction) {
+            // Toggle: if same reaction, remove it; otherwise set it
+            const newReaction = message.reaction === emoji ? null : emoji;
+            onReaction(message.id, newReaction);
+        }
+        setShowReactionPicker(false);
+    };
+
     const handleSpeak = async () => {
-        // If already speaking, stop
         if (isSpeaking && audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -94,29 +119,23 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             return;
         }
 
-        // If we have cached audio, play it directly
         if (cachedAudioUrlRef.current) {
             const audio = new Audio(cachedAudioUrlRef.current);
             audioRef.current = audio;
-
             audio.onplay = () => setIsSpeaking(true);
             audio.onended = () => setIsSpeaking(false);
             audio.onerror = () => {
                 setIsSpeaking(false);
-                // Clear cache on error, will refetch next time
                 cachedAudioUrlRef.current = null;
             };
-
             try {
                 await audio.play();
                 return;
             } catch {
-                // If cached audio fails, continue to fetch new
                 cachedAudioUrlRef.current = null;
             }
         }
 
-        // Fetch new audio
         setIsLoadingAudio(true);
 
         try {
@@ -137,8 +156,6 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
-
-            // Cache the audio URL for replay
             cachedAudioUrlRef.current = audioUrl;
 
             const audio = new Audio(audioUrl);
@@ -148,12 +165,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                 setIsSpeaking(true);
                 setIsLoadingAudio(false);
             };
-
-            audio.onended = () => {
-                setIsSpeaking(false);
-                // Don't revoke URL here - keep it cached for replay
-            };
-
+            audio.onended = () => setIsSpeaking(false);
             audio.onerror = (e) => {
                 console.error('Audio playback error:', e);
                 setIsSpeaking(false);
@@ -224,9 +236,62 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                         )}
                     </div>
 
-                    {/* Action buttons - ALWAYS VISIBLE for assistant messages */}
-                    {!isUser && !isTyping && (
-                        <div className="flex items-center gap-3 mt-2 ml-1">
+                    {/* Reaction display - shown at bottom right of bubble */}
+                    {message.reaction && (
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className={`absolute -bottom-2 ${isUser ? 'left-2' : 'right-2'} bg-[#333333] rounded-full px-1.5 py-0.5 shadow-lg border border-[#444444] cursor-pointer hover:scale-110 transition-transform`}
+                            onClick={() => onReaction && onReaction(message.id, null)}
+                            title="Click to remove reaction"
+                        >
+                            <span className="text-sm">{message.reaction}</span>
+                        </motion.div>
+                    )}
+
+                    {/* Action buttons - ALWAYS VISIBLE */}
+                    {!isTyping && (
+                        <div className={`flex items-center gap-3 mt-2 ${isUser ? 'justify-end mr-1' : 'ml-1'}`}>
+                            {/* Reaction button */}
+                            <div className="relative" ref={reactionPickerRef}>
+                                <motion.button
+                                    onClick={() => setShowReactionPicker(!showReactionPicker)}
+                                    className="flex items-center gap-1 text-xs text-[#525252] hover:text-white transition-colors"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <Smile size={14} />
+                                    <span>React</span>
+                                </motion.button>
+
+                                {/* Reaction picker popup */}
+                                <AnimatePresence>
+                                    {showReactionPicker && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                            className={`absolute bottom-full mb-2 ${isUser ? 'right-0' : 'left-0'} bg-[#1a1a1a] rounded-full px-2 py-1.5 shadow-xl border border-[#333333] flex gap-1 z-50`}
+                                        >
+                                            {REACTIONS.map((emoji) => (
+                                                <motion.button
+                                                    key={emoji}
+                                                    onClick={() => handleReactionClick(emoji)}
+                                                    className={`text-lg hover:scale-125 transition-transform p-1 rounded-full ${message.reaction === emoji ? 'bg-[#333333]' : ''}`}
+                                                    whileHover={{ scale: 1.3 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                >
+                                                    {emoji}
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="w-px h-3 bg-[#333333]" />
+
                             {/* Copy button */}
                             <motion.button
                                 onClick={handleCopy}
@@ -247,35 +312,37 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                                 )}
                             </motion.button>
 
-                            {/* Divider */}
-                            <div className="w-px h-3 bg-[#333333]" />
-
-                            {/* Read Aloud button */}
-                            <motion.button
-                                onClick={handleSpeak}
-                                disabled={isLoadingAudio}
-                                className="flex items-center gap-1.5 text-xs text-[#525252] hover:text-white transition-colors disabled:opacity-50"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                {isLoadingAudio ? (
-                                    <>
-                                        <Loader2 size={14} className="animate-spin text-blue-400" />
-                                        <span className="text-blue-400">Loading...</span>
-                                    </>
-                                ) : isSpeaking ? (
-                                    <>
-                                        <SoundwaveAnimation />
-                                        <Square size={14} className="text-red-400 ml-1" />
-                                        <span className="text-green-400">Playing</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Volume2 size={14} />
-                                        <span>{cachedAudioUrlRef.current ? 'Play' : 'Read'}</span>
-                                    </>
-                                )}
-                            </motion.button>
+                            {/* Read Aloud button - only for assistant */}
+                            {!isUser && (
+                                <>
+                                    <div className="w-px h-3 bg-[#333333]" />
+                                    <motion.button
+                                        onClick={handleSpeak}
+                                        disabled={isLoadingAudio}
+                                        className="flex items-center gap-1.5 text-xs text-[#525252] hover:text-white transition-colors disabled:opacity-50"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        {isLoadingAudio ? (
+                                            <>
+                                                <Loader2 size={14} className="animate-spin text-blue-400" />
+                                                <span className="text-blue-400">Loading...</span>
+                                            </>
+                                        ) : isSpeaking ? (
+                                            <>
+                                                <SoundwaveAnimation />
+                                                <Square size={14} className="text-red-400 ml-1" />
+                                                <span className="text-green-400">Playing</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Volume2 size={14} />
+                                                <span>{cachedAudioUrlRef.current ? 'Play' : 'Read'}</span>
+                                            </>
+                                        )}
+                                    </motion.button>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

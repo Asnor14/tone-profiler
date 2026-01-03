@@ -232,6 +232,12 @@ export default function Home() {
     [handleSendMessage]
   );
 
+  const handleReaction = useCallback((messageId: string, reaction: string | null) => {
+    setMessages(prev => prev.map(msg =>
+      msg.id === messageId ? { ...msg, reaction: reaction ?? undefined } : msg
+    ));
+  }, []);
+
   return (
     <main className="h-[100dvh] w-screen overflow-hidden bg-black">
       <AnimatePresence mode="wait">
@@ -307,6 +313,7 @@ export default function Home() {
                 onSendMessage={handleSendMessage}
                 onFileUpload={handleFileUpload}
                 onSelectModel={handleModelSelect}
+                onReaction={handleReaction}
                 isGenerating={isGenerating}
               />
             </div>

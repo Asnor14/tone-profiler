@@ -15,6 +15,7 @@ export interface Message {
     toneImage?: string;
     modelName?: string;   // e.g., "Llama 3.2"
     isTyping?: boolean;
+    reaction?: string;    // Emoji reaction (e.g., "👍", "❤️", "😂")
 }
 
 export interface ChatSession {

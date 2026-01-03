@@ -16,6 +16,7 @@ interface ChatAreaProps {
     onSendMessage: (message: string) => void;
     onFileUpload?: (file: File) => void;
     onSelectModel: (model: Model) => void;
+    onReaction?: (messageId: string, reaction: string | null) => void;
     isGenerating?: boolean;
 }
 
@@ -26,6 +27,7 @@ export default function ChatArea({
     onSendMessage,
     onFileUpload,
     onSelectModel,
+    onReaction,
     isGenerating = false,
 }: ChatAreaProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -116,6 +118,7 @@ export default function ChatArea({
                                 <MessageBubble
                                     key={message.id}
                                     message={message}
+                                    onReaction={onReaction}
                                 />
                             ))}
                         </AnimatePresence>
